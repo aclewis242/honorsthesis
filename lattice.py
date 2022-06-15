@@ -9,7 +9,7 @@ class Lattice:
     J = 1
     B = 0
 
-    def __init__(self, size: int=20, intEn: float=1, magF: float=0, dir: bool=None):
+    def __init__(self, size: int=500, intEn: float=1, magF: float=0, dir: bool=None):
         self.J = intEn
         self.B = magF
         self.lat = np.empty(size, dtype=st.Site)
@@ -25,14 +25,26 @@ class Lattice:
         return self.lat.size
     
     def energy(self):
-        tot = 0
+        tot = 0.0
         for s in self.lat:
             tot += -self.J*s*s.rn - self.B*s
         return tot
     
-    def metropolis(self, temp: float=1):
+    def metropolis(self, temp: float=200):
         b = 1/temp # Measured relative to the Boltzmann constant, i.e. k = 1
-        siteInd = np.random.choice(range(self.lat.size))
+        siteInd = np.random.choice(range(self.size()))
         site = self.lat[siteInd]
         currE = self.energy()
         newE = currE + 2*(self.J*site*(site.rn + site.ln) + self.B*site)
+        doFlip = 1
+        if newE > currE:
+            probOfFlip = np.e**(-b*(newE - currE))
+            doFlip = np.random.choice([0, 1], p=[1-probOfFlip, probOfFlip])
+        if doFlip:
+            self.lat[siteInd].flip()
+        return self.lat
+    
+    def sweep(self):
+        for i in range(self.size()):
+            self.lat = self.metropolis()
+        return self.energy()/self.size()
