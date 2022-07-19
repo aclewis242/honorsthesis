@@ -7,8 +7,8 @@ class Site: # This class represents individual sites in the lattice
     
     def __init__(self, ud: bool, l: 'Site'=None, r: 'Site'=None):
         self.st = ud
-        self.ln = l
-        self.rn = r
+        self.ln = l # Left neighbor
+        self.rn = r # Right neighbor
     
     def __repr__(self):
         return str(self.st)
