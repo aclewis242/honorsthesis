@@ -59,9 +59,10 @@ class Lattice:
         if newDE > 0:
             self.lat[siteInd].flip()
             self.dE = newDE
+            self.E += diffE
         return self.lat
     
     def sweep(self, alg=metropolis):
         for i in range(self.size):
-            self.lat = alg(self)
+            self.lat = alg()
         return self.E/self.size
