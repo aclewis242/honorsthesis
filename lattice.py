@@ -56,7 +56,7 @@ class Lattice:
         site = self.lat[siteInd]
         diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
         newDE = self.dE - diffE
-        if newDE > 0:
+        if newDE > 0.5:
             self.lat[siteInd].flip()
             self.dE = newDE
             self.E += diffE

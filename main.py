@@ -13,8 +13,14 @@ if __name__ == "__main__":
     energies[0] = l.energy()/l.size
     demonEnergies[0] = l.dE/l.size
     spins[0] = l.spin()
+    useDemon = False
+    name = "-ising"
+    algr = l.metropolis
+    if useDemon:
+        name = "-demon"
+        algr = l.metroDemon
     for i in steps:
-        energies[i+1] = l.sweep(alg=l.metroDemon)
+        energies[i+1] = l.sweep(alg=algr)
         demonEnergies[i+1] = l.dE/l.size
         spins[i+1] = l.spin()
     steps = range(numSteps+1)
@@ -27,12 +33,12 @@ if __name__ == "__main__":
         plt.legend()
     plt.ylabel("Energy")
     plt.xlabel("Timestep")
-    plt.savefig("energy.png")
+    plt.savefig("energy" + name + ".png")
     plt.show()
 
     # SPINS
     plt.plot(steps, spins)
     plt.ylabel("Spin direction")
     plt.xlabel("Timestep")
-    plt.savefig("spin.png")
+    plt.savefig("spin" + name + ".png")
     plt.show()
