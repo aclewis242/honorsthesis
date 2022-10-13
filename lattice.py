@@ -12,7 +12,7 @@ class Lattice:
     dE = 0
     size = 0
 
-    def __init__(self, size: int=20, intEn: float=1, demonEn: float=5, magF: float=0, dir: bool=None): # Initialises lattice
+    def __init__(self, size: int=20, intEn: float=1, demonEn: float=5, magF: float=0, dir: bool=False): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
         self.B = magF # Magnetic field
         self.lat = np.empty(size, dtype=st.Site)
@@ -51,7 +51,7 @@ class Lattice:
             self.E += diffE
         return self.lat
 
-    def metroDemon(self): # Implementation of the Metropolis algorithm, demon ver. (Kreutz)
+    def metroDemon(self): # Implementation of the Metropolis algorithm, demon ver. (Creutz)
         siteInd = np.random.choice(range(self.size)) # Selects random site
         site = self.lat[siteInd]
         diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
