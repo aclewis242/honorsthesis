@@ -10,7 +10,7 @@ class Lattice:
     size = 0
     # order = np.empty(0)
 
-    def __init__(self, size: int=100, intEn: float=1, demonEn: float=1, magF: float=0, dir: bool=None): # Initialises lattice
+    def __init__(self, size: int=100, intEn: float=1, demonEn: float=4, magF: float=0, dir: bool=None): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
         self.B = magF # Magnetic field
         self.size = size
@@ -57,7 +57,7 @@ class Lattice:
         site = self.lat[ind]
         diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
         newDE = self.dE - diffE
-        if newDE > 1: # and (site*site.rn<0 or site*site.ln<0):
+        if newDE > 0: # and (site*site.rn<0 or site*site.ln<0):
             self.lat[ind].flip()
             self.dE = newDE
             self.E += diffE

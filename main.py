@@ -6,7 +6,7 @@ import random as rand
 if __name__ == "__main__":
     ### SPECIFY INPUT PARAMETERS HERE ###
     size = 100
-    useDemon = True
+    useDemon = False
     numSteps = 500 # "Time"
 
     l = lat.Lattice(size=size)
@@ -18,15 +18,15 @@ if __name__ == "__main__":
     energies[0] = l.energy()/l.size
     demonEnergies[0] = l.dE/l.size
     spins[0] = l.spin()
-    name = "-ising"
+    name = "ising"
     algr = l.metropolis
     if useDemon:
-        name = "-demon"
+        name = "demon"
         algr = l.metroDemon
     order = np.zeros_like(steps)
     for i in steps:
         if i < numSteps/2:
-            order[i] = int(rand.random()*100)
+            order[i] = int(rand.random()*size)
         else:
             order[i] = order[steps[-1]-i]
     for i in range(order.size):
@@ -44,12 +44,12 @@ if __name__ == "__main__":
         plt.legend()
     plt.ylabel("Energy")
     plt.xlabel("Timestep")
-    plt.savefig("energy" + name + ".png")
+    plt.savefig("energy-{}.png".format(name))
     plt.show()
 
     # SPINS
     plt.plot(steps, spins)
     plt.ylabel("Spin direction")
     plt.xlabel("Timestep")
-    plt.savefig("spin" + name + ".png")
+    plt.savefig("spin-{}.png".format(name))
     plt.show()
