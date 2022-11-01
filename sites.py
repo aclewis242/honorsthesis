@@ -4,11 +4,13 @@ class Site: # This class represents individual sites in the lattice
     st = False
     ln = None
     rn = None
+    rb = None
     
-    def __init__(self, ud: bool, l: 'Site'=None, r: 'Site'=None):
+    def __init__(self, ud: bool, l: 'Site'=None, r: 'Site'=None, b: bool=True):
         self.st = ud
         self.ln = l # Left neighbor
         self.rn = r # Right neighbor
+        self.rb = b # Bond with right neighbor
     
     def __repr__(self):
         return str(self.st)
@@ -39,3 +41,6 @@ class Site: # This class represents individual sites in the lattice
     def setNs(self, l: 'Site', r: 'Site'):
         self.setLN(l)
         self.setRN(r)
+    
+    def mb(self):
+        self.rb = not self.rb

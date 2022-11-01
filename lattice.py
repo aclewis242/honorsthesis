@@ -1,5 +1,7 @@
 import numpy as np
 import sites as st
+from math import exp
+from mpmath import nsum, inf
 
 class Lattice:
     lat = np.empty(0, dtype=st.Site)
@@ -8,6 +10,7 @@ class Lattice:
     E = 0
     dE = 0
     size = 0
+    temp = 1
 
     def __init__(self, size: int=100, intEn: float=1, demonEn: float=4, magF: float=0, dir: bool=None): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
@@ -19,7 +22,7 @@ class Lattice:
             spin = True
             if dir is not None: spin = dir
             else: spin = altSpin
-            altSpin = not altSpin
+            if s%2 == 1: altSpin = not altSpin
             self.lat[s] = st.Site(ud=spin)
         for s in range(self.size):
             self.lat[s].setNs(self.lat[s-1], self.lat[(s+1)%self.size])
@@ -58,3 +61,11 @@ class Lattice:
             self.dE = newDE
             self.E += diffE
         return self.lat
+    
+    def bf(self, n): # Boltzmann
+        return exp(-n*self.J/self.temp) # k is treated as 1 for our purposes
+    
+    def entr(self): # Theoretical entropy
+        E = -nsum(lambda n: n*self.J*self.bf(n), [0, inf])/nsum(lambda n: self.bf(n), [0, inf])
+        A = -np.log(float(nsum(lambda n: self.bf(n), [0, inf])))
+        return (E - A)/self.temp
