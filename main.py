@@ -6,7 +6,7 @@ import random as rand
 if __name__ == "__main__":
     ### SPECIFY INPUT PARAMETERS HERE ###
     size = 100
-    useDemon = False
+    useDemon = True
     numSteps = 500 # "Time"
 
     l = lat.Lattice(size=size)

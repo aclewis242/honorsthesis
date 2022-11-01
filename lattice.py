@@ -8,16 +8,12 @@ class Lattice:
     E = 0
     dE = 0
     size = 0
-    # order = np.empty(0)
 
     def __init__(self, size: int=100, intEn: float=1, demonEn: float=4, magF: float=0, dir: bool=None): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
         self.B = magF # Magnetic field
         self.size = size
         self.lat = np.empty(size, dtype=st.Site)
-        # self.order = np.array([14, 6, 9, 0, 8, 19, 2, 16, 12, 11, 3, 18, 10, 15, 7, 4, 1, 5, 17, 13])
-        # self.order = np.linspace(0, size-1, size)
-        # rand.shuffle(self.order)
         altSpin = True
         for s in range(self.size):
             spin = True
@@ -57,23 +53,8 @@ class Lattice:
         site = self.lat[ind]
         diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
         newDE = self.dE - diffE
-        if newDE > 0: # and (site*site.rn<0 or site*site.ln<0):
+        if newDE > 0:
             self.lat[ind].flip()
             self.dE = newDE
             self.E += diffE
         return self.lat
-    
-    # def sweep(self, order, alg=metroDemon):
-    #     for i in order:
-    #         self.lat = alg(ind=int(i))
-    #     return self.E/self.size
-    
-    # def printIt(self, alg=metroDemon):
-    #     steps = range(self.size)
-    #     Es = np.zeros_like(steps)
-    #     for i in self.order:
-    #         self.lat = alg(ind=int(i))
-    #         Es[np.where(self.order==i)] = self.E
-    #     plt.plot(steps, Es)
-    #     plt.savefig("it.png")
-    #     plt.close()
