@@ -1,5 +1,6 @@
 import numpy as np
 import sites as st
+from bonds import Bond
 from math import exp
 from mpmath import nsum, inf
 
@@ -12,7 +13,7 @@ class Lattice:
     size = 0
     temp = 1
 
-    def __init__(self, size: int=100, intEn: float=1, demonEn: float=4, magF: float=0, dir: bool=None): # Initialises lattice
+    def __init__(self, size: int=100, intEn: float=1, demonEn: float=2, magF: float=0, dir: bool=None): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
         self.B = magF # Magnetic field
         self.size = size
@@ -24,15 +25,17 @@ class Lattice:
             else: spin = altSpin
             if s%2 == 1: altSpin = not altSpin
             self.lat[s] = st.Site(ud=spin)
+            self.lat[s].rb = Bond()
         for s in range(self.size):
             self.lat[s].setNs(self.lat[s-1], self.lat[(s+1)%self.size])
+            self.lat[s].lb = self.lat[s-1].rb
         self.E = self.energy()
         self.dE = demonEn
     
     def energy(self): # Returns instantaneous energy. Not for use inside loops (since multi-layer loops are slow)
         tot = 0.0
         for s in self.lat:
-            tot += -self.J*s*s.rn - self.B*s
+            tot += -self.J*s*s.rn*s.rb - self.B*s
         return tot
     
     def spin(self): # Returns overall spin direction
@@ -48,18 +51,29 @@ class Lattice:
             probOfFlip = np.e**(-b*(diffE))
             doFlip = np.random.choice([0, 1], p=[1-probOfFlip, probOfFlip])
         if doFlip:
-            self.lat[ind].flip()
+            site.flip()
             self.E += diffE
         return self.lat
 
     def metroDemon(self, ind: int=1): # Implementation of the Metropolis algorithm, demon ver. (Creutz)
         site = self.lat[ind]
-        diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
-        newDE = self.dE - diffE
-        if newDE > 0:
-            self.lat[ind].flip()
-            self.dE = newDE
+        diffE = (site.rb + site.lb)*self.J*site*(site.rn + site.ln) + self.B*site # Calculates difference in pre- and post-flip energy
+        if diffE < 0 or self.dE - diffE >= -2:
+            site.flip()
+            if self.dE - diffE == -2:
+                print("diffE: {}".format(diffE))
+                diffE/=2
+                site.rb.brk()
+            else:
+                site.mkall()
+            self.dE -= diffE
             self.E += diffE
+            # if self.E != self.energy():
+            #     print("bruh")
+            #     print("self.E: {}".format(self.E))
+            #     print(site.rb)
+            #     print("self.energy(): {}".format(self.energy()))
+            #     print(self.lat)
         return self.lat
     
     def bf(self, n): # Boltzmann
@@ -69,3 +83,13 @@ class Lattice:
         E = -nsum(lambda n: n*self.J*self.bf(n), [0, inf])/nsum(lambda n: self.bf(n), [0, inf])
         A = -np.log(float(nsum(lambda n: self.bf(n), [0, inf])))
         return (E - A)/self.temp
+    
+    def __repr__(self):
+        rv = ""
+        for s in self.lat:
+            rv += s
+            if s.rb:
+                rv += " "
+            else:
+                rv += "|"
+        return rv

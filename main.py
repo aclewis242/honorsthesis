@@ -5,9 +5,9 @@ import random as rand
 
 if __name__ == "__main__":
     ### SPECIFY INPUT PARAMETERS HERE ###
-    size = 500
+    size = 100
     useDemon = True
-    numSteps = 6000 # "Time"
+    numSteps = 5000 # "Time"
 
     l = lat.Lattice(size=size)
     steps = range(numSteps)

@@ -1,19 +1,36 @@
-import numpy as np
+from bonds import Bond
 
 class Site: # This class represents individual sites in the lattice
     st = False
     ln = None
+    lb = None
     rn = None
     rb = None
     
-    def __init__(self, ud: bool, l: 'Site'=None, r: 'Site'=None, b: bool=True):
+    def __init__(self, ud: bool, ln: 'Site'=None, lb: Bond=None, rn: 'Site'=None, rb: Bond=None):
         self.st = ud
-        self.ln = l # Left neighbor
-        self.rn = r # Right neighbor
-        self.rb = b # Bond with right neighbor
+        self.ln = ln # Left neighbor
+        self.lb = lb # Left bond
+        self.rn = rn # Right neighbor
+        self.rb = rb # Right bond
+    
+    def flip(self):
+        self.st = not self.st
+    
+    def setNs(self, l: 'Site', r: 'Site'):
+        self.ln = l
+        self.rn = r
+    
+    def mkall(self):
+        self.lb.mk()
+        self.rb.mk()
+    
+    def brkall(self):
+        self.lb.brk()
+        self.rb.brk()
     
     def __repr__(self):
-        return str(self.st)
+        return str(self)
     
     def __int__(self):
         if self.st: return 1
@@ -28,19 +45,7 @@ class Site: # This class represents individual sites in the lattice
         return int(self) * int(s2)
     
     __rmul__ = __mul__
-    
-    def flip(self):
-        self.st = not self.st
-    
-    def setLN(self, l: 'Site'):
-        self.ln = l
-    
-    def setRN(self, r: 'Site'):
-        self.rn = r
-    
-    def setNs(self, l: 'Site', r: 'Site'):
-        self.setLN(l)
-        self.setRN(r)
-    
-    def mb(self):
-        self.rb = not self.rb
+
+    def __str__(self):
+        if self.st: return "↑"
+        else: return "↓"
