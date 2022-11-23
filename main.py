@@ -28,7 +28,7 @@ if __name__ == "__main__":
     algr = l.metropolis
     if useDemon:
         name = "demon"
-        algr = l.metroDemon2
+        algr = l.metroDemon
     order = np.zeros_like(steps)
     for i in steps:
         if i < numSteps/2:

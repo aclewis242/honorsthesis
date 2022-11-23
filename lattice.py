@@ -55,61 +55,26 @@ class Lattice:
             site.flip()
             self.E += diffE
         return self.lat
-
-    def metroDemon(self, ind: int=1): # Implementation of the Metropolis algorithm, demon ver. (Creutz)
-        site = self.lat[ind]
-        diffE = (site.rb + site.lb)*self.J*site*(site.rn + site.ln) + self.B*site # Calculates difference in pre- and post-flip energy
-        if diffE < 0 or self.dE - diffE >= -2:
-            site.flip()
-            if self.dE - diffE == -2:
-                print("diffE: {}".format(diffE))
-                diffE/=2
-                site.rb.brk()
-            else:
-                site.mkall()
-            self.dE -= diffE
-            self.E += diffE
-            if self.E != self.energy():
-                print("discrepancy detected!")
-            #     print("self.E: {}".format(self.E))
-            #     print(site.rb)
-            #     print("self.energy(): {}".format(self.energy()))
-            #     print(self.lat)
-        return self.lat
     
-    def metroDemon2(self, site: Site, rev: bool=False):
-        # print(f"pos: {site.ind}")
-        # print(f"init (site): {site.E()}")
-        # print(f"init (sys): {self.E}")
+    def metroDemon(self, site: Site, rev: bool=False):
         order = [self.flip, self.bonds]
         if rev: order = np.flip(order)
-        ex = True
         for f in order:
-            ex = f(site, ex)
-        # print(f"final (site): {site.E()}")
-        # print(f"final (sys): {self.E}")
-        # if self.E != self.energy():
-        #     print(f"discrepancy detected! (running is {self.E}, calculated is {self.energy()})")
+            f(site)
         return self.lat
 
-    def flip(self, site: Site, ex: bool):
+    def flip(self, site: Site):
         diffE = -2*site.E()
-        if diffE <= self.dE and ex:
+        if diffE <= self.dE:
             self.trans(diffE)
             site.flip()
-            return True
-        return True
     
-    def bonds(self, site: Site, ex: bool):
-        if ex:
-            initE = site.E()
-            site.rb.flip()
-            diffE = site.E() - initE
-            if diffE <= self.dE:
-                self.trans(diffE)
-                return True
-            site.rb.flip()
-        return True
+    def bonds(self, site: Site):
+        initE = site.E()
+        site.rb.flip()
+        diffE = site.E() - initE
+        if diffE <= self.dE: self.trans(diffE)
+        else: site.rb.flip()
     
     def trans(self, E):
         self.E += E
