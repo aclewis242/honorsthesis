@@ -1,30 +1,31 @@
 import numpy as np
-import sites as st
+from numpy import *
+from sites import Site
 from bonds import Bond
-from math import exp
-from mpmath import nsum, inf
 
 class Lattice:
-    lat = np.empty(0, dtype=st.Site)
+    lat = np.empty(0, dtype=Site)
     J = 1
     B = 0
     E = 0
     dE = 0
     size = 0
     temp = 1
+    K = 1
 
     def __init__(self, size: int=100, intEn: float=1, demonEn: float=2, magF: float=0, dir: bool=None): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
         self.B = magF # Magnetic field
+        self.K = self.J/self.temp # "temp" is technically actually kT in this case; merged for convenience
         self.size = size
-        self.lat = np.empty(size, dtype=st.Site)
+        self.lat = np.empty(size, dtype=Site)
         altSpin = True
         for s in range(self.size):
             spin = True
             if dir is not None: spin = dir
             else: spin = altSpin
             if s%2 == 1: altSpin = not altSpin
-            self.lat[s] = st.Site(ud=spin)
+            self.lat[s] = Site(ud=spin, ind=s, J=self.J, B=self.B)
             self.lat[s].rb = Bond()
         for s in range(self.size):
             self.lat[s].setNs(self.lat[s-1], self.lat[(s+1)%self.size])
@@ -68,26 +69,73 @@ class Lattice:
                 site.mkall()
             self.dE -= diffE
             self.E += diffE
-            # if self.E != self.energy():
-            #     print("bruh")
+            if self.E != self.energy():
+                print("discrepancy detected!")
             #     print("self.E: {}".format(self.E))
             #     print(site.rb)
             #     print("self.energy(): {}".format(self.energy()))
             #     print(self.lat)
         return self.lat
     
-    def bf(self, n): # Boltzmann
-        return exp(-n*self.J/self.temp) # k is treated as 1 for our purposes
+    def metroDemon2(self, site: Site, rev: bool=False):
+        # print(f"pos: {site.ind}")
+        # print(f"init (site): {site.E()}")
+        # print(f"init (sys): {self.E}")
+        order = [self.flip, self.bonds]
+        if rev: order = np.flip(order)
+        ex = True
+        for f in order:
+            ex = f(site, ex)
+        # print(f"final (site): {site.E()}")
+        # print(f"final (sys): {self.E}")
+        # if self.E != self.energy():
+        #     print(f"discrepancy detected! (running is {self.E}, calculated is {self.energy()})")
+        return self.lat
+
+    def flip(self, site: Site, ex: bool):
+        diffE = -2*site.E()
+        if diffE <= self.dE and ex:
+            self.trans(diffE)
+            site.flip()
+            return True
+        return True
     
-    def entr(self): # Theoretical entropy
-        E = -nsum(lambda n: n*self.J*self.bf(n), [0, inf])/nsum(lambda n: self.bf(n), [0, inf])
-        A = -np.log(float(nsum(lambda n: self.bf(n), [0, inf])))
-        return (E - A)/self.temp
+    def bonds(self, site: Site, ex: bool):
+        if ex:
+            initE = site.E()
+            site.rb.flip()
+            diffE = site.E() - initE
+            if diffE <= self.dE:
+                self.trans(diffE)
+                return True
+            site.rb.flip()
+        return True
     
+    def trans(self, E):
+        self.E += E
+        self.dE -= E
+    
+    def enSp(self): # Theoretical spin energy
+        return -(self.size-1)*self.J*tanh(self.K)
+    
+    def entrSp(self): # Theoretical spin entropy
+        return (self.enSp()/self.temp + (self.size*log(2) + (self.size - 1)*log(cosh(self.K))))/self.size
+    
+    def enDe(self): # Theoretical demon energy
+        return self.J/(exp(self.K) - 1)
+    
+    def entrDe(self): # Theoretical demon entropy
+        return self.enDe()/self.temp - log(1 - exp(-self.K))
+    
+    def entr(self, dist): # Calculate entropy of given distribution
+        dist = dist[dist != 0]/sum(dist)
+        ent = -np.sum(dist*log(dist))
+        return dist, ent
+
     def __repr__(self):
         rv = ""
         for s in self.lat:
-            rv += s
+            rv += str(s)
             if s.rb:
                 rv += " "
             else:

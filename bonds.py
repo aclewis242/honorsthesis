@@ -10,6 +10,9 @@ class Bond:
     def brk(self):
         self.bd = False
     
+    def flip(self):
+        self.bd = not self.bd
+    
     def __int__(self):
         return self.bd
     
