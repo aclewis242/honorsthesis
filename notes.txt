@@ -1,0 +1,10 @@
+First third of simulation: bonds do change. Freeze for second third, restore for last third
+Plot ln(KE)-ln(KE0) against time
+
+We want the Metropolis and Creutz algorithms to give the same energy distribution (Boltzmann, *not* Maxwell-Boltzmann)
+
+Exponential (aligned) until you stop changing bonds. They deviate a lot, but then begin to come back together at long times. This is good
+
+Bond changing and spin-flips are on a different timescale. This is where the arrow comes from
+
+The 1D model gives a clear way of getting a clean break between regions; hard to do in 2D
