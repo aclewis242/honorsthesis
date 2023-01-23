@@ -9,7 +9,7 @@ if __name__ == "__main__":
     ### SPECIFY INPUT PARAMETERS HERE ###
     size = 100
     useDemon = True
-    numSteps = 5000 # "Time"
+    numSteps = 4800 # "Time"
     bkt = 1000 # Size of buckets for spin distribution
 
     l = lat.Lattice(size=size)
@@ -36,9 +36,15 @@ if __name__ == "__main__":
         else:
             order[i] = order[steps[-1]-i]
     rev = False
+    brk = True
+    formerBrk = brk
     for i in range(order.size):
         if i >= numSteps/2: rev = True
-        l.lat = algr(l.lat[order[i]], rev=rev)
+        if i >= numSteps/2 - numSteps/6 and i < numSteps/2 + numSteps/6: brk = False
+        else: brk = True
+        if formerBrk != brk: print("(Switch)")
+        formerBrk = brk
+        l.lat = algr(l.lat[order[i]], brk=brk, rev=rev)
         # print(l)
         energies[i+1] = l.E/l.size
         demonEnergies[i+1] = l.dE/l.size
@@ -75,16 +81,22 @@ if __name__ == "__main__":
         plt.savefig("dedist.png")
         plt.show()
 
-    # SPINS
-    plt.plot(steps, spins)
-    plt.ylabel("Spin direction")
-    plt.xlabel("Timestep")
-    plt.savefig("spin-{}.png".format(name))
-    plt.show()
+    # ENERGY LN
+    if useDemon:
+        lndE = np.log(demonEnergies) - np.log(demonEnergies[0])
+        plt.plot(steps, lndE)
+        plt.show()
 
-    # SPIN DISTRIBUTION
-    plt.bar(range(spdist.size), spdist)
-    plt.ylabel("P")
-    plt.xlabel("Spin")
-    plt.savefig("spdist.png")
-    plt.show()
+    # # SPINS
+    # plt.plot(steps, spins)
+    # plt.ylabel("Spin direction")
+    # plt.xlabel("Timestep")
+    # plt.savefig("spin-{}.png".format(name))
+    # plt.show()
+
+    # # SPIN DISTRIBUTION
+    # plt.bar(range(spdist.size), spdist)
+    # plt.ylabel("P")
+    # plt.xlabel("Spin")
+    # plt.savefig("spdist.png")
+    # plt.show()

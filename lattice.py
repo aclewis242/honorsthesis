@@ -56,11 +56,11 @@ class Lattice:
             self.E += diffE
         return self.lat
     
-    def metroDemon(self, site: Site, rev: bool=False):
+    def metroDemon(self, site: Site, brk: bool=True, rev: bool=False):
         order = [self.flip, self.bonds]
+        if not brk: order.pop()
         if rev: order = np.flip(order)
-        for f in order:
-            f(site)
+        for f in order: f(site)
         return self.lat
 
     def flip(self, site: Site):
