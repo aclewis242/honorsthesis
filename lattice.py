@@ -1,5 +1,4 @@
 import numpy as np
-from numpy import *
 from sites import Site
 from bonds import Bond
 
@@ -13,7 +12,7 @@ class Lattice:
     temp = 1
     K = 1
 
-    def __init__(self, size: int=100, intEn: float=1, demonEn: float=2, magF: float=0, dir: bool=None): # Initialises lattice
+    def __init__(self, size: int=100, intEn: float=1, demonEn: float=0, magF: float=0, dir: bool=None, align: float=None): # Initialises lattice
         self.J = intEn # Interaction energy (keep this at 1)
         self.B = magF # Magnetic field
         self.K = self.J/self.temp # "temp" is technically actually kT in this case; merged for convenience
@@ -30,21 +29,23 @@ class Lattice:
         for s in range(self.size):
             self.lat[s].setNs(self.lat[s-1], self.lat[(s+1)%self.size])
             self.lat[s].lb = self.lat[s-1].rb
+        if align is not None:
+            align = align%1
+            for s in range(self.size): self.lat[s].st = np.random.choice([False, True], p=[1-align, align])
         self.E = self.energy()
         self.dE = demonEn
     
     def energy(self): # Returns instantaneous energy. Not for use inside loops (since multi-layer loops are slow)
         tot = 0.0
-        for s in self.lat:
-            tot += -self.J*s*s.rn*s.rb - self.B*s
+        for s in self.lat: tot += -self.J*s*s.rn*s.rb - self.B*s
         return tot
     
     def spin(self): # Returns overall spin direction
         return np.mean(self.lat)
     
-    def metropolis(self, ind: int=1, temp: float=1): # Implementation of the Metropolis algorithm
-        b = 1/temp # Measured relative to the Boltzmann constant, i.e. k = 1
-        site = self.lat[ind]
+    def metropolis(self, site: Site, brk: bool=True, rev: bool=False): # Implementation of the Metropolis algorithm
+        temp = 1 # Measured relative to the Boltzmann constant, i.e. kT = temp
+        b = 1/temp
         diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
         # To find probability of the flip occurring:
         doFlip = 1
@@ -60,7 +61,7 @@ class Lattice:
         order = [self.flip, self.bonds]
         if not brk: order.pop()
         if rev: order = np.flip(order)
-        for f in order: f(site)
+        [f(site) for f in order]
         return self.lat
 
     def flip(self, site: Site):
@@ -80,29 +81,28 @@ class Lattice:
         self.E += E
         self.dE -= E
     
-    def enSp(self): # Theoretical spin energy
-        return -(self.size-1)*self.J*tanh(self.K)
+    # ENTROPY CALCULATIONS ARE ALL DEPRECATED
+    # def enSp(self): # Theoretical spin energy
+    #     return -(self.size-1)*self.J*tanh(self.K)
     
-    def entrSp(self): # Theoretical spin entropy
-        return (self.enSp()/self.temp + (self.size*log(2) + (self.size - 1)*log(cosh(self.K))))/self.size
+    # def entrSp(self): # Theoretical spin entropy
+    #     return (self.enSp()/self.temp + (self.size*log(2) + (self.size - 1)*log(cosh(self.K))))/self.size
     
-    def enDe(self): # Theoretical demon energy
-        return self.J/(exp(self.K) - 1)
+    # def enDe(self): # Theoretical demon energy
+    #     return self.J/(exp(self.K) - 1)
     
-    def entrDe(self): # Theoretical demon entropy
-        return self.enDe()/self.temp - log(1 - exp(-self.K))
+    # def entrDe(self): # Theoretical demon entropy
+    #     return self.enDe()/self.temp - log(1 - exp(-self.K))
     
-    def entr(self, dist): # Calculate entropy of given distribution
-        dist = dist[dist != 0]/sum(dist)
-        ent = -np.sum(dist*log(dist))
-        return dist, ent
+    # def entr(self, dist): # Calculate entropy of given distribution
+    #     dist = dist[dist != 0]/sum(dist)
+    #     ent = -np.sum(dist*log(dist))
+    #     return dist, ent
 
     def __repr__(self):
-        rv = ""
+        rv = ''
         for s in self.lat:
             rv += str(s)
-            if s.rb:
-                rv += " "
-            else:
-                rv += "|"
+            if s.rb: rv += ' '
+            else: rv += '|'
         return rv

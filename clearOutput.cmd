@@ -1,0 +1,1 @@
+for /R "C:\Users\Cuttlefish\Documents\VS Code\ising" %%I in (*.png) do @del "%%I"

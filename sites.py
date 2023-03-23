@@ -59,5 +59,5 @@ class Site: # This class represents individual sites in the lattice
     __rmul__ = __mul__
 
     def __str__(self):
-        if self.st: return "↑"
-        else: return "↓"
+        if self.st: return '↑'
+        else: return '↓'
