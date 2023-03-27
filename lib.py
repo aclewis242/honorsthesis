@@ -117,3 +117,6 @@ def genLats(n: int=10, s: int=500, a: float=0.7):
     for i in range(n):
         l = lat.Lattice(size=s, align=a)
         with open(f'lats/{l.energy}.lat', 'wb') as f: pkl.dump(l, f)
+
+def load(l: lat.Lattice):
+    return l

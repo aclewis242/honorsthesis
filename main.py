@@ -15,8 +15,9 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
 
     ### INITIAL SETUP ###
     genLats(s=size)
-    l = lat.Lattice(size=size)
-    with open('lattice.lat', 'rb') as f: l = pkl.load(f)
+    l = lat.Lattice(size=size, align=0.65)
+    # with open('lattice.lat', 'rb') as f: l = pkl.load(f)
+    l = load(l)
     if not doDemons: l.dE = -size - l.energy
     initL = l.__repr__()
     numSteps = 6*blockCount*time
