@@ -23,7 +23,7 @@ class Lattice:
     dE = 0
     size = 0
 
-    def __init__(self, size: int=100, intEn: float=1, demonEn: float=0, magF: float=0, dir: bool=None, align: float=None):
+    def __init__(self, size: int=500, intEn: float=1, demonEn: float=0, magF: float=0, dir: bool=None, align: float=None):
         '''
         Initialises the lattice.
 
@@ -70,14 +70,14 @@ class Lattice:
         for s in self.lat: tot += -self.J*s*s.rn*s.rb - self.B*s
         return tot
     
-    def metropolis(self, site: Site, *args, **kwargs):
+    def metropolis(self, site: Site, temp: float=5, *args, **kwargs):
         '''
         Decides whether or not to update a particular site according to the Metropolis algorithm.
 
         ### Parameters
         site: The site to be checked
         '''
-        temp = 1 # Measured relative to the Boltzmann constant, i.e. kT = temp
+        # 'temp' is measured relative to the Boltzmann constant, i.e. kT = temp
         b = 1/temp
         diffE = 2*(self.J*site*(site.rn + site.ln) + self.B*site) # Calculates difference in pre- and post-flip energy
         doFlip = True
@@ -85,10 +85,11 @@ class Lattice:
             probOfFlip = np.e**(-b*(diffE))
             doFlip = np.random.choice([False, True], p=[1-probOfFlip, probOfFlip])
         if doFlip:
-            site.flip()
-            self.E += diffE
+            # site.flip()
+            self.trans(diffE)
+            if abs(self.E) >= self.size: self.trans(-diffE)
     
-    def metroDemon(self, site: Site, brk: bool=True, rev: bool=False):
+    def demon(self, site: Site, brk: bool=True, rev: bool=False, **kwargs):
         '''
         Decides whether or not to update a particular site according to the Creutz algorithm.
 
@@ -136,6 +137,9 @@ class Lattice:
         '''
         self.E += E
         self.dE -= E
+    
+    def load(self, l: 'Lattice'):
+        return l
 
     def __repr__(self):
         '''

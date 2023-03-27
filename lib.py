@@ -6,6 +6,8 @@ import numpy as np
 import lattice as lat
 import matplotlib.pyplot as plt
 import random as rand
+import pickle as pkl
+import sys
 from numpy import cos, pi
 
 def longest(l: list) -> int:
@@ -101,3 +103,17 @@ def norm(dist: np.ndarray):
     dist: The distribution to be normalised
     '''
     return dist/sum(dist)
+
+def genLats(n: int=10, s: int=500, a: float=0.7):
+    '''
+    Generates several .lat files containing lattice objects.
+
+    ### Parameters
+    n: The number of lattices to generate
+    s: The size of the lattices
+    a: The alignment fraction to use (0-1)
+    '''
+    sys.setrecursionlimit(100000)
+    for i in range(n):
+        l = lat.Lattice(size=s, align=a)
+        with open(f'lats/{l.energy}.lat', 'wb') as f: pkl.dump(l, f)

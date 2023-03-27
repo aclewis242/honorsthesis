@@ -40,3 +40,5 @@ Questions for Chamberlin:
 - More generally, I'm not quite sure what the final product is supposed to *be*, exactly. Would I be correct in believing that, structurally speaking, it's akin to the reports we write for lab classes (just more extensive/
 detailed)?
 - What do I expect out of the defense? I don't really have a point of reference for that, either
+
+- Avg the blue lines and compare with temp. measured according to the KE expression he mentioned but couldn't remember
