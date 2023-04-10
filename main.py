@@ -16,7 +16,7 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
     ### INITIAL SETUP ###
     genLats(s=size)
     l = lat.Lattice(size=size, align=0.65)
-    # with open('lattice.lat', 'rb') as f: l = pkl.load(f)
+    with open('-56.lat', 'rb') as f: l = pkl.load(f)
     l = load(l)
     if not doDemons: l.dE = -size - l.energy
     initL = l.__repr__()
@@ -40,10 +40,10 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
     energies = np.zeros_like(order, dtype=float)
     energies = np.append(energies, 0.0)
     demonEnergies = np.zeros_like(energies, dtype=float)
-    dEdist = np.zeros_like(energies, dtype=int)
+    dEdist = np.zeros_like(energies, dtype=float)
     energies[0] = l.energy
     demonEnergies[0] = l.dE
-    dEblock = np.zeros_like(dEdist, dtype=int)
+    dEblock = np.zeros_like(dEdist, dtype=float)
     sys.setrecursionlimit(10000)
     factor = 4
     if doBrks: factor = 1
@@ -59,10 +59,11 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
         demonEnergies[i+1] = l.dE
         dEblock[abs(int(l.dE/factor))] += 1
         if i%eDiffBlock == 0 and i != 0:
-            eDiffsUnp.append(dEblock.copy())
+            eDiffsUnp.append(norm(dEblock.copy()))
             dEblock_trim = np.trim_zeros(dEblock, 'b')
             ind = int(i/eDiffBlock)
-            plt.bar(range(dEblock_trim.size), norm(dEblock_trim))
+            clrs = [getColor(e/dEblock_trim.size) for e in range(dEblock_trim.size)]
+            plt.bar(range(dEblock_trim.size), norm(dEblock_trim), color=clrs)
             plt.xlabel('Energy')
             plt.ylabel('Probability')
             plt.title(f'Distribution at time block {ind}')
@@ -74,7 +75,7 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
     elif doDemons and not timeExtension: print('Reversibility condition failed!')
     
     ### ENERGY LOGARITHM DIFFERENCE PROCESSING ###
-    eDiffsUnp.append(dEblock)
+    eDiffsUnp.append(norm(dEblock))
     eDiffsUnp = np.array(eDiffsUnp)
     if doSum: dEdist = dEblock
     eDiffsNZ = []
@@ -99,8 +100,9 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
     ### RESULTS PLOTTING
     # Energy over time
     plt.plot(energies, label='System energy')
-    plt.plot(demonEnergies, label='Demon energy')
-    plt.plot(demonEnergies + energies, label='Total energy')
+    if doDemons:
+        plt.plot(demonEnergies, label='Demon energy')
+        plt.plot(demonEnergies + energies, label='Total energy')
     plt.legend()
     plt.ylabel('Energy')
     plt.xlabel('Timestep')
@@ -108,13 +110,25 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
     plt.savefig(f'energy-{name}.png')
     plt.close()
 
-    # Final energy distribution
+    # Final energy distribution (ln)
+    lbl = 'demon energy'
+    if not doDemons: lbl='potential energy'
     dEdist = dEdist[:eLim]
     colors = [getColor(e/dEdist.size) for e in range(dEdist.size)]
-    plt.bar(range(dEdist.size), norm(dEdist), color=colors)
+    dEdist2 = np.log(norm(dEdist))
+    plt.bar(range(dEdist2.size), dEdist2, color=colors)
+    plt.ylabel(r'$\ln p$')
+    plt.xlabel(f'Energy ({factor}x)')
+    plt.title(f'Final {lbl} distribution')
+    plt.savefig(f'edist-{name} (ln).png')
+    plt.close()
+
+    # Final energy distribution (not ln)
+    dEdist = norm(dEdist)
+    plt.bar(range(dEdist.size), dEdist, color=colors)
     plt.ylabel('Probability')
     plt.xlabel(f'Energy ({factor}x)')
-    plt.title('Final energy distribution')
+    plt.title(f'Final {lbl} distribution')
     plt.savefig(f'edist-{name}.png')
     plt.close()
     
@@ -123,8 +137,8 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
     eDiffsT = np.transpose(eDiffs)
     [plt.plot(tblocks, eDiffsT[e], color=getColor(e/len(eDiffsT))) for e in range(len(eDiffsT))]
     plt.xlabel('Timestep')
-    plt.ylabel(r'$\Delta\ln(E)$')
-    plt.title('Difference of energy natural logarithms')
+    plt.ylabel(r'$\Delta\ln p = \langle\beta\rangle$')
+    plt.title('Difference of energy natural logarithms (unfilt)')
     plt.savefig(f'ediffs-{name}.png')
     plt.close()
 
@@ -139,8 +153,8 @@ def run(temp=2.5):      # 'temp' is used only in the Metropolis algorithm
             if e == 1: t1 = temp
             print(f'Temperature (E={factor*e}):\t{temp}')
     plt.xlabel('Timestep')
-    plt.ylabel(r'$\Delta\ln(E)$')
-    plt.title('Difference of energy natural logarithms (filtered)')
+    plt.ylabel(r'$\Delta\ln p = \langle\beta\rangle$')
+    plt.title('Difference of energy natural logarithms')
     plt.savefig(f'ediffs-{name}-filtered-noleg.png')
     plt.legend()
     plt.savefig(f'ediffs-{name}-filtered.png')
