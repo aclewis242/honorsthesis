@@ -137,9 +137,6 @@ class Lattice:
         '''
         self.E += E
         self.dE -= E
-    
-    def load(self, l: 'Lattice'):
-        return l
 
     def __repr__(self):
         '''

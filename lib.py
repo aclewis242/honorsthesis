@@ -2,12 +2,13 @@
 A general-purpose collection of functions used in processing the simulation's outputs.
 '''
 
+import sys
+import os
 import numpy as np
 import lattice as lat
 import matplotlib.pyplot as plt
 import random as rand
 import pickle as pkl
-import sys
 from numpy import cos, pi
 
 def longest(l: list) -> int:
@@ -113,10 +114,28 @@ def genLats(n: int=10, s: int=500, a: float=0.7):
     s: The size of the lattices
     a: The alignment fraction to use (0-1)
     '''
+    checkDir('lats')
     sys.setrecursionlimit(100000)
     for i in range(n):
         l = lat.Lattice(size=s, align=a)
         with open(f'lats/{l.energy}.lat', 'wb') as f: pkl.dump(l, f)
 
 def load(l: lat.Lattice):
+    '''
+    'Load a lattice from a file,' sort of. It doesn't actually 'load' anything, per se, but it's useful for typing purposes (i.e.
+    telling Python that the object loaded from the file is, in fact, a 'Lattice').
+
+    ### Parameters
+    l: The lattice object to load.
+    '''
     return l
+
+def checkDir(*args):
+    '''
+    Make sure the directory in question does, in fact, exist. Used in file saving.
+
+    ### Parameters
+    args: The directory(ies) to check. Works within the directory of the project.
+    '''
+    for dir in args:
+        if not os.path.exists(dir): os.mkdir(dir)
